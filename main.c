@@ -1,13 +1,15 @@
+// somehow overwrote the calculus project with this project 🤔
+
 #include <windows.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
-
 #include <profileapi.h>
 
 #include "events/events.h"
+#include "events/keyboard/keyboardEvent.h"
 #include "renderer.h"
 struct
 {
@@ -34,6 +36,7 @@ void RegisterAppListeners()
 {
     RegisterEventListener(UpdateEventListener, EventUpdate);
     RegisterEventListener(PaintEventListener, EventPaint);
+    RegisterEventListener(KeyboardEventListener, EventKeyboard);
 }
 
 long long ApplicationElapsedTime;
@@ -83,7 +86,6 @@ int WINAPI WinMain(HINSTANCE _hinstance, HINSTANCE _hprevInstance, PSTR _pCmdLin
     window_handle = CreateWindow((PCSTR)window_class_name, "Drawing Pixels", WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                                  500, 10, 1000, 1000, NULL, NULL, _hinstance, NULL);
 
-
     if (window_handle == NULL)
     {
         return -1;
@@ -121,9 +123,46 @@ LRESULT CALLBACK WindowProcessMessage(HWND window_handle, UINT message, WPARAM w
 
     case WM_KEYDOWN:
     {
+
+        enum KeyCode code = TD_KEY_ARROW_UP;
+
+        switch (wParam)
+        {
+        case VK_DOWN:
+        {
+            code = TD_KEY_ARROW_DOWN;
+            break;
+        }
+        case VK_UP:
+        {
+            code = TD_KEY_ARROW_UP;
+            break;
+        }
+        case VK_LEFT:
+        {
+            code = TD_KEY_ARROW_LEFT;
+            break;
+        }
+
+        case VK_RIGHT:
+        {
+            code = TD_KEY_ARROW_RIGHT;
+            break;
+        }
+        case VK_SPACE:
+        {
+            code = TD_KEY_SPACE;
+            break;
+        }
+        };
+
+        KeyEventData data = {TD_Pressed, code};
+
         Event keydown = {
             EventKeyboard,
-        };
+            &data};
+
+        DispatchEvent(&keydown);
     }
     break;
 
