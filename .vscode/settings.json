@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.h": "c",
+        "Task.C": "cpp"
+    }
+}
