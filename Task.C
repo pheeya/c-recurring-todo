@@ -1,7 +1,10 @@
 #include "Task.h"
 #include <stdlib.h>
 #include <string.h>
-Task *GetTasks(const char *_filePath, int *num)
+int td_selected = 0;
+int td_num_daily_tasks = 0;
+static Task *DailyTasks;
+Task *ReadTasks(const char *_filePath, int *num)
 {
     FILE *file = fopen(_filePath, "r");
 
@@ -58,4 +61,62 @@ Task *AddTask(Task **taskList, int *numTasks, const char *_description, bool _co
     (*taskList)[*numTasks] = *newTask;
     (*numTasks)++;
     return newTask;
+}
+
+void LoadTasks()
+{
+    DailyTasks = ReadTasks("daily.txt", &td_num_daily_tasks);
+}
+Task *GetDailyTasks()
+{
+    return DailyTasks;
+}
+void OnAppStart()
+{
+    LoadTasks();
+}
+
+void TaskStartEventListener(Event *_event)
+{
+    OnAppStart();
+}
+static bool canGoDown = true;
+static bool canGoUp = true;
+
+static void OnUpdate()
+{
+    if (GetKeyDown(TD_KEY_ARROW_DOWN) && canGoDown)
+    {
+        canGoDown = false;
+
+        td_selected++;
+        if (td_selected == td_num_daily_tasks)
+            td_selected = 0;
+        FRAME_DIRTY = true;
+    }
+
+    if (GetKeyDown(TD_KEY_ARROW_UP) && canGoUp)
+    {
+        canGoUp = false;
+
+        td_selected--;
+        if (td_selected < 0)
+            td_selected = td_num_daily_tasks - 1;
+        FRAME_DIRTY = true;
+    }
+
+    if (!GetKeyDown(TD_KEY_ARROW_DOWN))
+    {
+        canGoDown = true;
+    }
+
+    if (!GetKeyDown(TD_KEY_ARROW_UP))
+    {
+        canGoUp = true;
+    }
+}
+
+void TaskUpdateEventListener(Event *_event)
+{
+    OnUpdate();
 }

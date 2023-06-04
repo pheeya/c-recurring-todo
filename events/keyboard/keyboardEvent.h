@@ -46,4 +46,6 @@ void KeyboardEventListener(Event *_event);
 void OnKey(KeyEventData _data);
 
 
+int GetKeyDown(enum KeyCode _code);
+
 #endif

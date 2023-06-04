@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <time.h>
 #include "./Task.h"
+
+int FRAME_DIRTY = 0;
 void UpdateEventListener(Event *_event)
 {
     OnUpdate();
 }
 
-void OnUpdate()
+static void OnUpdate()
 {
 }
 
@@ -34,22 +36,33 @@ void OnPaint(PaintArgs _args)
 
     hFont2 = CreateFont(20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
                         CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Calibri"));
+    hFont3 = CreateFont(20, 0, 0, 0, FW_NORMAL, FALSE, TRUE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
+                        CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, TEXT("Calibri"));
     hFontOriginal = (HFONT)SelectObject(_args.context, hFont1);
 
     SetBkMode(_args.context, TRANSPARENT);
     SetTextColor(_args.context, RGB(180, 180, 180));
     TextOut(_args.context, 150, 150, "Daily", 5);
 
-    int num = 0;
-    Task *daily = GetTasks("daily.txt", &num);
 
     int margin = 30;
 
     SelectObject(_args.context, hFont2);
-    for (int i = 0; i < num; i++)
+
+    Task *daily = GetDailyTasks();
+
+    for (int i = 0; i < td_num_daily_tasks; i++)
     {
         // add margin additionally to skip first line
 
+        if (i == td_selected)
+        {
+            SelectObject(_args.context, hFont3);
+        }
+        else
+        {
+            SelectObject(_args.context, hFont2);
+        }
         if (daily[i].completed)
         {
             SetTextColor(_args.context, RGB(10, 170, 10));

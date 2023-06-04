@@ -11,6 +11,7 @@
 #include "events/events.h"
 #include "events/keyboard/keyboardEvent.h"
 #include "renderer.h"
+#include "Task.h"
 struct
 {
     int width;
@@ -37,6 +38,8 @@ void RegisterAppListeners()
     RegisterEventListener(UpdateEventListener, EventUpdate);
     RegisterEventListener(PaintEventListener, EventPaint);
     RegisterEventListener(KeyboardEventListener, EventKeyboard);
+    RegisterEventListener(TaskStartEventListener, EventAppStart);
+    RegisterEventListener(TaskUpdateEventListener, EventUpdate);
 }
 
 long long ApplicationElapsedTime;
@@ -90,7 +93,8 @@ int WINAPI WinMain(HINSTANCE _hinstance, HINSTANCE _hprevInstance, PSTR _pCmdLin
     {
         return -1;
     };
-
+    Event _appstart = {EventAppStart, NULL};
+    DispatchEvent(&_appstart);
     while (!quit)
     {
         ApplicationFPS = 1 / (((milliseconds_now() - ApplicationStartTime) - ApplicationElapsedTime) / (double)1000);
@@ -101,10 +105,15 @@ int WINAPI WinMain(HINSTANCE _hinstance, HINSTANCE _hprevInstance, PSTR _pCmdLin
             DispatchMessage(&message);
         }
 
-        // InvalidateRect(window_handle, NULL, FALSE);
-        // UpdateWindow(window_handle);
-        // Event UpdateEvent = {EventUpdate, NULL};
-        // DispatchEvent(&UpdateEvent);
+        if (FRAME_DIRTY)
+        {
+            InvalidateRect(window_handle, NULL, FALSE);
+            UpdateWindow(window_handle);
+            FRAME_DIRTY = 0;
+        }
+
+        Event UpdateEvent = {EventUpdate, NULL};
+        DispatchEvent(&UpdateEvent);
     }
 
     return 0;

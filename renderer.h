@@ -4,7 +4,7 @@
 #include <windows.h>
 #include "events/events.h"
 
-
+extern int FRAME_DIRTY;
 
 typedef struct PaintArgs {
 HWND handle;
@@ -14,7 +14,7 @@ HDC context;
 
 void UpdateEventListener(Event *_event);
 
-void OnUpdate();
+static void OnUpdate();
 
 
 

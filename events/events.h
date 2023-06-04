@@ -10,6 +10,7 @@ enum EventType
     EventKeyboard,
     EventMouse,
     EventPaint,
+    EventAppStart
 };
 
 typedef struct
