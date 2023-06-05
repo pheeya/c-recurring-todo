@@ -42,8 +42,11 @@ void OnPaint(PaintArgs _args)
 
     SetBkMode(_args.context, TRANSPARENT);
     SetTextColor(_args.context, RGB(180, 180, 180));
-    TextOut(_args.context, 150, 150, "Daily", 5);
 
+    int pageMarginX = 50;
+    int pageMarginY = 50;
+
+    TextOut(_args.context, pageMarginX, pageMarginY, "Daily", 5);
 
     int margin = 30;
 
@@ -72,6 +75,6 @@ void OnPaint(PaintArgs _args)
             SetTextColor(_args.context, RGB(180, 180, 180));
         }
 
-        TextOut(_args.context, 150, 150 + (40) + (margin * i), daily[i].description, sizeof(daily[i].description));
+        TextOut(_args.context, pageMarginX, pageMarginY + (40) + (margin * i), daily[i].description, sizeof(daily[i].description));
     }
 }

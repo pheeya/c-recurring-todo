@@ -27,6 +27,22 @@ int GetKeyDown(enum KeyCode _code)
     {
         return (GetKeyState(VK_UP) & 0x80000);
     }
+    case TD_KEY_SPACE:
+    {
+        return (GetKeyState(VK_SPACE) & 0x80000);
+    }
+    case TD_KEY_LCTRL:
+    {
+        return (GetKeyState(VK_LCONTROL) & 0x80000);
+    }
+    case TD_KEY_LSHIFT:
+    {
+        return (GetKeyState(VK_LSHIFT) & 0x80000);
+    }
+       case TD_KEY_ESC:
+    {
+        return (GetKeyState(VK_ESCAPE) & 0x80000);
+    }
     default:
     {
         return 0;

@@ -33,6 +33,7 @@ static BITMAPINFO frame_bitmap_info;
 static HBITMAP frame_bitmap = 0;
 static HDC frame_device_context = 0;
 
+static void AppOnUpdate();
 void RegisterAppListeners()
 {
     RegisterEventListener(UpdateEventListener, EventUpdate);
@@ -64,8 +65,11 @@ long long milliseconds_now()
     }
 }
 
+static HWND window_handle;
+
 int WINAPI WinMain(HINSTANCE _hinstance, HINSTANCE _hprevInstance, PSTR _pCmdLine, int _nCmdShow)
 {
+
     ApplicationStartTime = milliseconds_now();
 
     RegisterAppListeners();
@@ -85,9 +89,9 @@ int WINAPI WinMain(HINSTANCE _hinstance, HINSTANCE _hprevInstance, PSTR _pCmdLin
     frame_bitmap_info.bmiHeader.biBitCount = 3 * 8 + 1 * 8;
     frame_bitmap_info.bmiHeader.biCompression = BI_RGB;
     frame_device_context = CreateCompatibleDC(0);
-    static HWND window_handle;
-    window_handle = CreateWindow((PCSTR)window_class_name, "Drawing Pixels", WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-                                 500, 10, 1000, 1000, NULL, NULL, _hinstance, NULL);
+
+    window_handle = CreateWindow((PCSTR)window_class_name, "Drawing Pixels", WS_POPUP | WS_VISIBLE,
+                                 1600, 20, 300, 400, NULL, NULL, _hinstance, NULL);
 
     if (window_handle == NULL)
     {
@@ -95,11 +99,15 @@ int WINAPI WinMain(HINSTANCE _hinstance, HINSTANCE _hprevInstance, PSTR _pCmdLin
     };
     Event _appstart = {EventAppStart, NULL};
     DispatchEvent(&_appstart);
+
+    HCURSOR cursor = LoadCursor(NULL, IDC_ARROW);
+    SetCursor(cursor);
     while (!quit)
     {
         ApplicationFPS = 1 / (((milliseconds_now() - ApplicationStartTime) - ApplicationElapsedTime) / (double)1000);
         ApplicationElapsedTime = milliseconds_now() - ApplicationStartTime;
         static MSG message = {0};
+        SetCursor(cursor);
         while (PeekMessage(&message, NULL, 0, 0, PM_REMOVE))
         {
             DispatchMessage(&message);
@@ -114,12 +122,13 @@ int WINAPI WinMain(HINSTANCE _hinstance, HINSTANCE _hprevInstance, PSTR _pCmdLin
 
         Event UpdateEvent = {EventUpdate, NULL};
         DispatchEvent(&UpdateEvent);
+        AppOnUpdate();
     }
 
     return 0;
 }
 
-LRESULT CALLBACK WindowProcessMessage(HWND window_handle, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WindowProcessMessage(HWND _window_handle, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
@@ -132,46 +141,6 @@ LRESULT CALLBACK WindowProcessMessage(HWND window_handle, UINT message, WPARAM w
 
     case WM_KEYDOWN:
     {
-
-        enum KeyCode code = TD_KEY_ARROW_UP;
-
-        switch (wParam)
-        {
-        case VK_DOWN:
-        {
-            code = TD_KEY_ARROW_DOWN;
-            break;
-        }
-        case VK_UP:
-        {
-            code = TD_KEY_ARROW_UP;
-            break;
-        }
-        case VK_LEFT:
-        {
-            code = TD_KEY_ARROW_LEFT;
-            break;
-        }
-
-        case VK_RIGHT:
-        {
-            code = TD_KEY_ARROW_RIGHT;
-            break;
-        }
-        case VK_SPACE:
-        {
-            code = TD_KEY_SPACE;
-            break;
-        }
-        };
-
-        KeyEventData data = {TD_Pressed, code};
-
-        Event keydown = {
-            EventKeyboard,
-            &data};
-
-        DispatchEvent(&keydown);
     }
     break;
 
@@ -180,12 +149,12 @@ LRESULT CALLBACK WindowProcessMessage(HWND window_handle, UINT message, WPARAM w
         static PAINTSTRUCT paint;
 
         static HDC device_context;
-        device_context = BeginPaint(window_handle, &paint);
+        device_context = BeginPaint(_window_handle, &paint);
 
-        PaintArgs pargs = {window_handle, device_context};
+        PaintArgs pargs = {_window_handle, device_context};
         Event paintEvent = {EventPaint, &pargs};
         DispatchEvent(&paintEvent);
-        EndPaint(window_handle, &paint);
+        EndPaint(_window_handle, &paint);
     }
     break;
 
@@ -206,9 +175,39 @@ LRESULT CALLBACK WindowProcessMessage(HWND window_handle, UINT message, WPARAM w
 
     default:
     { // Message not handled; pass on to default message handling function
-        return DefWindowProc(window_handle, message, wParam, lParam);
+        return DefWindowProc(_window_handle, message, wParam, lParam);
     }
     break;
     }
     return 0;
+}
+
+static bool td_window_hidden = false;
+static bool canToggleWindow = true;
+static void AppOnUpdate()
+{
+    if (GetKeyDown(TD_KEY_LSHIFT) && GetKeyDown(TD_KEY_LCTRL) && canToggleWindow)
+    {
+        if (td_window_hidden)
+        {
+            SetWindowPos(window_handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            td_window_hidden = false;
+        }
+        else
+        {
+            SetWindowPos(window_handle, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            td_window_hidden = true;
+        }
+        canToggleWindow = false;
+    }
+
+    if (!(GetKeyDown(TD_KEY_LSHIFT) && GetKeyDown(TD_KEY_LCTRL)))
+    {
+        canToggleWindow = true;
+    }
+
+    if (GetKeyDown(TD_KEY_ESC))
+    {
+        DestroyWindow(window_handle);
+    }
 }

@@ -42,3 +42,6 @@ Task* GetDailyTasks();
 
 
 void ToggleTaskStatus();
+
+
+void UpdateTaskInFile(const char* _filePath, int _taskNum, Task* _task);

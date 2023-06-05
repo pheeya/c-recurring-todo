@@ -29,6 +29,8 @@ Task *ReadTasks(const char *_filePath, int *num)
         AddTask(&tasks, num, description, completed);
     }
 
+    fclose(file);
+
     return tasks;
 }
 
@@ -82,6 +84,7 @@ void TaskStartEventListener(Event *_event)
 }
 static bool canGoDown = true;
 static bool canGoUp = true;
+static bool canToggleStatus = true;
 
 static void OnUpdate()
 {
@@ -105,6 +108,12 @@ static void OnUpdate()
         FRAME_DIRTY = true;
     }
 
+    if (GetKeyDown(TD_KEY_SPACE) && canToggleStatus)
+    {
+        canToggleStatus = false;
+        ToggleTaskStatus();
+    }
+
     if (!GetKeyDown(TD_KEY_ARROW_DOWN))
     {
         canGoDown = true;
@@ -114,9 +123,64 @@ static void OnUpdate()
     {
         canGoUp = true;
     }
+
+    if (!GetKeyDown(TD_KEY_SPACE))
+    {
+        canToggleStatus = true;
+    }
 }
 
 void TaskUpdateEventListener(Event *_event)
 {
     OnUpdate();
+}
+
+void ToggleTaskStatus()
+{
+    DailyTasks[td_selected].completed = !DailyTasks[td_selected].completed;
+    FRAME_DIRTY = true;
+
+    UpdateTaskInFile("Daily.txt", td_selected, &DailyTasks[td_selected]);
+}
+
+void UpdateTaskInFile(const char *_filePath, int _taskNum, Task *_task)
+{
+    FILE *file = fopen(_filePath, "r");
+    FILE *tmp = fopen("tmp.tmp", "w");
+    if (file == NULL)
+    {
+        return;
+    }
+
+
+    char line[MAX_LINE_LENGTH];
+
+    Task *tasks = NULL;
+    int lineNum = 0;
+    char newLine[MAX_LINE_LENGTH];
+
+    strcpy(newLine, _task->description);
+    strcat(newLine, " ");
+    strcat(newLine, _task->completed ? "1" : "0");
+    strcat(newLine, "\n");
+
+    while (fgets(line, MAX_LINE_LENGTH, file) != NULL)
+    {
+        if (lineNum == _taskNum)
+        {
+            fputs(newLine, tmp);
+        }
+        else{
+            fputs(line, tmp);
+        }
+
+        lineNum++;
+    }
+
+    fclose(tmp);
+    fclose(file);
+
+    remove(_filePath);
+
+    rename("tmp.tmp", _filePath);
 }
