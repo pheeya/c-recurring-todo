@@ -1,1 +1,1 @@
-gcc  main.c renderer.c events/events.c Task.c events/keyboard/keyboardEvent.c context.c -luser32 -lgdi32 -o rtodo.exe && rtodo.exe
+gcc -mwindows main.c renderer.c events/events.c Task.c events/keyboard/keyboardEvent.c context.c -luser32 -lgdi32 -o rtodo.exe && rtodo.exe

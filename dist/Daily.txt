@@ -1,0 +1,5 @@
+fin 0
+cyclosporin 1
+cyclosporin 1
+cyclosporin 0
+tobramycin 1
