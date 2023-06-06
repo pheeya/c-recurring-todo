@@ -6,13 +6,14 @@
 
 extern int FRAME_DIRTY;
 
+
 typedef struct PaintArgs {
 HWND handle;
 HDC context;
 } PaintArgs;
 
 
-void UpdateEventListener(Event *_event);
+void RendererUpdateListener(Event *_event);
 
 static void OnUpdate();
 
@@ -21,5 +22,6 @@ static void OnUpdate();
 void PaintEventListener(Event *_event);
 
 void OnPaint(PaintArgs _args);
+
 
 #endif

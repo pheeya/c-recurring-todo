@@ -4,13 +4,27 @@
 #include "./Task.h"
 
 int FRAME_DIRTY = 0;
-void UpdateEventListener(Event *_event)
+static int WasInFocus;
+static COLORREF bg_color = RGB(50, 50, 50);
+void RendererUpdateListener(Event *_event)
 {
     OnUpdate();
 }
 
 static void OnUpdate()
 {
+    if (IsInFocus() && !WasInFocus)
+    {
+        bg_color = RGB(10, 10, 10);
+        FRAME_DIRTY = true;
+        WasInFocus = true;
+    }
+    else if (!IsInFocus() && WasInFocus)
+    {
+        bg_color = RGB(30, 30, 30);
+        FRAME_DIRTY = true;
+        WasInFocus = false;
+    }
 }
 
 void PaintEventListener(Event *_event)
@@ -18,12 +32,13 @@ void PaintEventListener(Event *_event)
     PaintArgs *args = (PaintArgs *)_event->data;
     OnPaint(*args);
 }
+
 void OnPaint(PaintArgs _args)
 {
 
     PAINTSTRUCT ps;
 
-    HBRUSH hBrush = CreateSolidBrush(RGB(50, 50, 50));
+    HBRUSH hBrush = CreateSolidBrush(bg_color);
     RECT bg;
     GetClientRect(_args.handle, &bg);
     FillRect(_args.context, &bg, hBrush);

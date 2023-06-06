@@ -12,6 +12,7 @@
 #include "events/keyboard/keyboardEvent.h"
 #include "renderer.h"
 #include "Task.h"
+#include "context.h"
 struct
 {
     int width;
@@ -36,7 +37,7 @@ static HDC frame_device_context = 0;
 static void AppOnUpdate();
 void RegisterAppListeners()
 {
-    RegisterEventListener(UpdateEventListener, EventUpdate);
+    RegisterEventListener(RendererUpdateListener, EventUpdate);
     RegisterEventListener(PaintEventListener, EventPaint);
     RegisterEventListener(KeyboardEventListener, EventKeyboard);
     RegisterEventListener(TaskStartEventListener, EventAppStart);
@@ -65,7 +66,6 @@ long long milliseconds_now()
     }
 }
 
-static HWND window_handle;
 
 int WINAPI WinMain(HINSTANCE _hinstance, HINSTANCE _hprevInstance, PSTR _pCmdLine, int _nCmdShow)
 {
@@ -90,10 +90,10 @@ int WINAPI WinMain(HINSTANCE _hinstance, HINSTANCE _hprevInstance, PSTR _pCmdLin
     frame_bitmap_info.bmiHeader.biCompression = BI_RGB;
     frame_device_context = CreateCompatibleDC(0);
 
-    window_handle = CreateWindow((PCSTR)window_class_name, "Drawing Pixels", WS_POPUP | WS_VISIBLE,
+    global_window_handle = CreateWindow((PCSTR)window_class_name, "Drawing Pixels", WS_POPUP | WS_VISIBLE,
                                  1600, 20, 300, 400, NULL, NULL, _hinstance, NULL);
 
-    if (window_handle == NULL)
+    if (global_window_handle == NULL)
     {
         return -1;
     };
@@ -102,6 +102,8 @@ int WINAPI WinMain(HINSTANCE _hinstance, HINSTANCE _hprevInstance, PSTR _pCmdLin
 
     HCURSOR cursor = LoadCursor(NULL, IDC_ARROW);
     SetCursor(cursor);
+    SetWindowPos(global_window_handle, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
     while (!quit)
     {
         ApplicationFPS = 1 / (((milliseconds_now() - ApplicationStartTime) - ApplicationElapsedTime) / (double)1000);
@@ -115,8 +117,8 @@ int WINAPI WinMain(HINSTANCE _hinstance, HINSTANCE _hprevInstance, PSTR _pCmdLin
 
         if (FRAME_DIRTY)
         {
-            InvalidateRect(window_handle, NULL, FALSE);
-            UpdateWindow(window_handle);
+            InvalidateRect(global_window_handle, NULL, FALSE);
+            UpdateWindow(global_window_handle);
             FRAME_DIRTY = 0;
         }
 
@@ -182,32 +184,33 @@ LRESULT CALLBACK WindowProcessMessage(HWND _window_handle, UINT message, WPARAM 
     return 0;
 }
 
-static bool td_window_hidden = false;
-static bool canToggleWindow = true;
+// static bool td_window_hidden = false;
+// static bool canToggleWindow = true;
 static void AppOnUpdate()
 {
-    if (GetKeyDown(TD_KEY_LSHIFT) && GetKeyDown(TD_KEY_LCTRL) && canToggleWindow)
-    {
-        if (td_window_hidden)
-        {
-            SetWindowPos(window_handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-            td_window_hidden = false;
-        }
-        else
-        {
-            SetWindowPos(window_handle, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-            td_window_hidden = true;
-        }
-        canToggleWindow = false;
-    }
+    // if (GetKeyDown(TD_KEY_LSHIFT) && GetKeyDown(TD_KEY_LCTRL) && canToggleWindow)
+    // {
+    //     if (td_window_hidden)
+    //     {
 
-    if (!(GetKeyDown(TD_KEY_LSHIFT) && GetKeyDown(TD_KEY_LCTRL)))
-    {
-        canToggleWindow = true;
-    }
+    //         SetWindowPos(window_handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    //         td_window_hidden = false;
+    //     }
+    //     else
+    //     {
+    //         SetWindowPos(window_handle, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    //         td_window_hidden = true;
+    //     }
+    //     canToggleWindow = false;
+    // }
 
-    if (GetKeyDown(TD_KEY_ESC))
-    {
-        DestroyWindow(window_handle);
-    }
+    // if (!(GetKeyDown(TD_KEY_LSHIFT) && GetKeyDown(TD_KEY_LCTRL)))
+    // {
+    //     canToggleWindow = true;
+    // }
+
+    // if (GetKeyDown(TD_KEY_ESC))
+    // {
+    //     DestroyWindow(window_handle);
+    // }
 }

@@ -16,6 +16,10 @@ void OnKey(KeyEventData _data)
 
 int GetKeyDown(enum KeyCode _code)
 {
+    if (!IsInFocus())
+        return 0;
+
+        
     switch (_code)
     {
     case TD_KEY_ARROW_DOWN:
@@ -39,7 +43,7 @@ int GetKeyDown(enum KeyCode _code)
     {
         return (GetKeyState(VK_LSHIFT) & 0x80000);
     }
-       case TD_KEY_ESC:
+    case TD_KEY_ESC:
     {
         return (GetKeyState(VK_ESCAPE) & 0x80000);
     }
