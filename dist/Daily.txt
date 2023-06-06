@@ -1,4 +1,0 @@
-watch movie 1
-drink water 1
-drink water again 0
-take pills 0
