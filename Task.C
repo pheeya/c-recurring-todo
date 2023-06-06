@@ -4,6 +4,56 @@
 int td_selected = 0;
 int td_num_daily_tasks = 0;
 static Task *DailyTasks;
+
+static int last_updated = 0;
+static void ResetIfRequired()
+{
+    time_t rawtime;
+    struct tm *timeinfo;
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    int day = timeinfo->tm_wday;
+    if (last_updated != day)
+    {
+        FILE *file = fopen("last-updated.txt", "w");
+        FILE *tmp = fopen("tmp.tmp", "w");
+        char dayNum[25];
+
+        sprintf(dayNum, "%d", day);
+        fputs(dayNum, tmp);
+
+        fclose(file);
+        fclose(tmp);
+
+        remove("last-updated.txt");
+        rename("tmp.tmp", "last-updated.txt");
+
+        last_updated = day;
+
+        for (int i = 0; i < td_num_daily_tasks; i++)
+        {
+            OverrideDailyTask(i, 0);
+        }
+    }
+}
+
+static void CheckLastUpdated()
+{
+    FILE *file = fopen("last-updated.txt", "r");
+
+    if (file == NULL)
+    {
+        return;
+    }
+
+    char line[10];
+    fgets(line, 10, file);
+    last_updated = atoi(line);
+
+    fclose(file);
+}
+
 Task *ReadTasks(const char *_filePath, int *num)
 {
     FILE *file = fopen(_filePath, "r");
@@ -75,6 +125,7 @@ Task *GetDailyTasks()
 }
 void OnAppStart()
 {
+    CheckLastUpdated();
     LoadTasks();
 }
 
@@ -111,7 +162,7 @@ static void OnUpdate()
     if (GetKeyDown(TD_KEY_SPACE) && canToggleStatus)
     {
         canToggleStatus = false;
-        ToggleTaskStatus();
+        ToggleDailyTask(td_selected);
     }
 
     if (!GetKeyDown(TD_KEY_ARROW_DOWN))
@@ -133,13 +184,20 @@ static void OnUpdate()
 void TaskUpdateEventListener(Event *_event)
 {
     OnUpdate();
+    ResetIfRequired();
 }
 
-void ToggleTaskStatus()
+void ToggleDailyTask(int _index)
 {
-    DailyTasks[td_selected].completed = !DailyTasks[td_selected].completed;
+    DailyTasks[_index].completed = !DailyTasks[td_selected].completed;
     FRAME_DIRTY = true;
+    UpdateTaskInFile("Daily.txt", td_selected, &DailyTasks[td_selected]);
+}
 
+void OverrideDailyTask(int _index, int _completed)
+{
+    DailyTasks[_index].completed = _completed;
+    FRAME_DIRTY = true;
     UpdateTaskInFile("Daily.txt", td_selected, &DailyTasks[td_selected]);
 }
 
@@ -151,7 +209,6 @@ void UpdateTaskInFile(const char *_filePath, int _taskNum, Task *_task)
     {
         return;
     }
-
 
     char line[MAX_LINE_LENGTH];
 
@@ -170,7 +227,8 @@ void UpdateTaskInFile(const char *_filePath, int _taskNum, Task *_task)
         {
             fputs(newLine, tmp);
         }
-        else{
+        else
+        {
             fputs(line, tmp);
         }
 

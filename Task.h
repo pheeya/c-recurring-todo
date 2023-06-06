@@ -7,6 +7,7 @@
 #include "events/events.h"
 #include <stdio.h>
 #include "renderer.h"
+#include <time.h>
 #define MAX_LINE_LENGTH 256
 extern int td_selected;
 extern int td_num_daily_tasks;
@@ -19,6 +20,10 @@ typedef struct Task
 } Task;
 
 #endif
+
+
+void ToggleDailyTask(int _index);
+void OverrideDailyTask(int _index, int _completed);
 
 Task *ReadTasks(const char *_filePath, int *num);
 
@@ -41,7 +46,6 @@ Task* GetDailyTasks();
 
 
 
-void ToggleTaskStatus();
 
 
 void UpdateTaskInFile(const char* _filePath, int _taskNum, Task* _task);
