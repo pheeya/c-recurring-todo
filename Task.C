@@ -67,16 +67,27 @@ Task *ReadTasks(const char *_filePath, int *num)
 
     Task *tasks = NULL;
 
+    char delim[] = " ";
     while (fgets(line, MAX_LINE_LENGTH, file) != NULL)
     {
-        char delim[] = " ";
         char *token = strtok(line, delim);
-        const char *description = token;
+        char desc[MAX_LINE_LENGTH] = "";
+        const char *val;
 
-        token = strtok(NULL, delim);
-        bool completed = *token == '1';
+        while (token != NULL)
+        {
+            val = token;
+            if (val != "0" && val != "1")
+            {
+                strcat(desc, token);
+                strcat(desc, " ");
+            }
 
-        AddTask(&tasks, num, description, completed);
+            token = strtok(NULL, delim);
+        }
+        bool completed = *val == '1';
+
+        AddTask(&tasks, num, desc, completed);
     }
 
     fclose(file);
