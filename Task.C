@@ -70,6 +70,7 @@ Task *ReadTasks(const char *_filePath, int *num)
     char delim[] = " ";
     while (fgets(line, MAX_LINE_LENGTH, file) != NULL)
     {
+        line[strcspn(line, "\n")] = 0;
         char *token = strtok(line, delim);
         char desc[MAX_LINE_LENGTH] = "";
         const char *val;
@@ -77,7 +78,7 @@ Task *ReadTasks(const char *_filePath, int *num)
         while (token != NULL)
         {
             val = token;
-            if (val != "0" && val != "1")
+            if (*val != '0' && *val != '1')
             {
                 strcat(desc, token);
                 strcat(desc, " ");
@@ -86,7 +87,6 @@ Task *ReadTasks(const char *_filePath, int *num)
             token = strtok(NULL, delim);
         }
         bool completed = *val == '1';
-
         AddTask(&tasks, num, desc, completed);
     }
 
@@ -209,7 +209,7 @@ void OverrideDailyTask(int _index, int _completed)
 {
     DailyTasks[_index].completed = _completed;
     FRAME_DIRTY = true;
-    UpdateTaskInFile("Daily.txt", td_selected, &DailyTasks[td_selected]);
+    UpdateTaskInFile("Daily.txt", _index, &DailyTasks[_index]);
 }
 
 void UpdateTaskInFile(const char *_filePath, int _taskNum, Task *_task)
@@ -230,7 +230,10 @@ void UpdateTaskInFile(const char *_filePath, int _taskNum, Task *_task)
     strcpy(newLine, _task->description);
     strcat(newLine, " ");
     strcat(newLine, _task->completed ? "1" : "0");
-    strcat(newLine, "\n");
+    if (_taskNum != td_num_daily_tasks - 1)
+    {
+        strcat(newLine, "\n");
+    }
 
     while (fgets(line, MAX_LINE_LENGTH, file) != NULL)
     {
